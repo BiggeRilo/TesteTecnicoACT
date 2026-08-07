@@ -24,7 +24,7 @@ public class ApiException extends RuntimeException {
     }
 
     public static ApiException unprocessable(String message) {
-        return new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, message);
+        return new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, message);
     }
 
     public static ApiException forbidden(String message) {

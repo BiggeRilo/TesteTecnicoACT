@@ -37,8 +37,6 @@ class TaskLogServiceTest {
     @Test
     void rejectsTimeThatIsNotAMultipleOfThirtyMinutes() {
         Enrollment enrollment = mock(Enrollment.class);
-        when(enrollment.getEnrolledAt()).thenReturn(LocalDateTime.of(2026, 1, 1, 10, 0));
-        when(enrollment.getDeadline()).thenReturn(LocalDateTime.of(2026, 7, 1, 10, 0));
         when(enrollmentService.findOwned(1L, "student@example.com")).thenReturn(enrollment);
         TaskLogDtos.TaskLogRequest request = new TaskLogDtos.TaskLogRequest(
                 LocalDate.of(2026, 2, 1),

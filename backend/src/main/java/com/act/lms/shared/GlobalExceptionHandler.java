@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
         for (FieldError error : exception.getBindingResult().getFieldErrors()) {
             errors.putIfAbsent(error.getField(), error.getDefaultMessage());
         }
-        return response(HttpStatus.UNPROCESSABLE_ENTITY, "Os dados informados são inválidos.", errors);
+        return response(HttpStatus.UNPROCESSABLE_CONTENT, "Os dados informados são inválidos.", errors);
     }
 
     @ExceptionHandler({ConstraintViolationException.class, HttpMessageNotReadableException.class})
