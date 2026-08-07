@@ -1,0 +1,55 @@
+import { HttpErrorResponse, type HttpEvent, type HttpHandlerFn, type HttpRequest } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, Observable, throwError } from 'rxjs';
+import type { ApiError } from '../../shared/models/api';
+import { Notifier } from './notifier.service';
+
+function extractMessage(error: HttpErrorResponse): string {
+  const body = error.error;
+  if (body && typeof body === 'object' && 'message' in body && typeof body.message === 'string') {
+    return body.message;
+  }
+  if (error.status === 0) {
+    return 'Não foi possível conectar ao servidor. Tente novamente.';
+  }
+  switch (error.status) {
+    case 400:
+      return 'Requisição inválida. Verifique os dados informados.';
+    case 401:
+      return 'Sua sessão expirou. Faça login novamente.';
+    case 403:
+      return 'Você não tem permissão para realizar esta ação.';
+    case 404:
+      return 'O recurso solicitado não foi encontrado.';
+    case 409:
+      return 'Conflito: o registro já existe ou não está disponível.';
+    case 422:
+      return 'Dados não processáveis. Verifique as regras de negócio.';
+    case 500:
+    default:
+      return 'Ocorreu um erro inesperado no servidor.';
+  }
+}
+
+function extractFieldErrors(error: HttpErrorResponse): Record<string, string> | undefined {
+  const body = error.error;
+  if (body && typeof body === 'object' && body.fieldErrors && typeof body.fieldErrors === 'object') {
+    return body.fieldErrors as Record<string, string>;
+  }
+  return undefined;
+}
+
+export function errorInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
+  const notifier = inject(Notifier);
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse): Observable<never> => {
+      const apiError: ApiError = {
+        status: error.status,
+        message: extractMessage(error),
+        fieldErrors: extractFieldErrors(error),
+      };
+      notifier.error(apiError.message);
+      return throwError(() => apiError);
+    }),
+  );
+}
