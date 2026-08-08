@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -378,6 +378,7 @@ export class CourseLogs {
   private readonly taskLogService = inject(TaskLogService);
   private readonly notifier = inject(Notifier);
   private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly today = new Date();
   protected readonly categories = TASK_CATEGORIES;
@@ -414,7 +415,7 @@ export class CourseLogs {
     const enrollmentId = Number(this.route.snapshot.paramMap.get('id'));
     this.enrollmentService
       .myEnrollments()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (list) => {
           const match = list.find((item) => item.id === enrollmentId);
@@ -432,7 +433,7 @@ export class CourseLogs {
     this.logsLoading.set(true);
     this.taskLogService
       .listByEnrollment(enrollmentId)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (logs) => {
           this.logs.set([...logs].sort((a, b) => b.date.localeCompare(a.date)));
@@ -514,7 +515,7 @@ export class CourseLogs {
       ? this.taskLogService.update(editing, input)
       : this.taskLogService.create(enrollmentId, input);
 
-    request.pipe(takeUntilDestroyed()).subscribe({
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
         this.notifier.success(editing ? 'Tarefa atualizada!' : 'Tarefa registrada!');
@@ -536,7 +537,7 @@ export class CourseLogs {
     });
     ref
       .afterClosed()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((confirmed) => {
         if (!confirmed) {
           return;

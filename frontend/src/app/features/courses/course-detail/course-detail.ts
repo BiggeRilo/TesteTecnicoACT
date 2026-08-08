@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButton } from '@angular/material/button';
@@ -139,6 +139,7 @@ export class CourseDetail {
   private readonly courseService = inject(CourseService);
   private readonly enrollmentService = inject(EnrollmentService);
   private readonly notifier = inject(Notifier);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly auth = inject(AuthService);
 
   protected readonly course = signal<Course | null>(null);
@@ -162,7 +163,7 @@ export class CourseDetail {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.courseService
       .getById(id)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (course) => {
           this.course.set(course);
@@ -174,7 +175,7 @@ export class CourseDetail {
     if (this.auth.isAuthenticated()) {
       this.enrollmentService
         .myEnrollments()
-        .pipe(takeUntilDestroyed())
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((list) => {
           const match = list.find((item) => item.courseId === id);
           if (match) {
@@ -188,7 +189,7 @@ export class CourseDetail {
     this.enrolling.set(true);
     this.enrollmentService
       .enroll(courseId)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (enrollment) => {
           this.enrollment.set({ id: enrollment.id, deadline: enrollment.deadline });

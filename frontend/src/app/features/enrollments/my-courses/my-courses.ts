@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButton } from '@angular/material/button';
@@ -136,6 +136,7 @@ import { daysUntil } from '../../../shared/utils/date.util';
 })
 export class MyCourses {
   private readonly enrollmentService = inject(EnrollmentService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly enrollments = signal<Enrollment[]>([]);
   protected readonly loading = signal(true);
@@ -145,7 +146,7 @@ export class MyCourses {
   constructor() {
     this.enrollmentService
       .myEnrollments()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (enrollments) => {
           this.enrollments.set(enrollments);
