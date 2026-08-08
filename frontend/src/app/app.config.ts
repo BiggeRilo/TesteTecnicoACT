@@ -7,12 +7,15 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/http/auth.interceptor';
 import { errorInterceptor } from './core/http/error.interceptor';
+import { jsonContentTypeInterceptor } from './core/http/json-content-type.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(
+      withInterceptors([jsonContentTypeInterceptor, authInterceptor, errorInterceptor]),
+    ),
     provideAnimationsAsync(),
     provideNativeDateAdapter(),
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
