@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import type { AuthResponse, AuthUser, LoginRequest, RegisterRequest, User } from '../../shared/models/user';
 import { environment } from '../../../environments/environment';
+import { jsonHttpOptions } from '../http/http-options';
 import { TokenStorage } from './token-storage.service';
 
 @Injectable({ providedIn: 'root' })
@@ -19,13 +20,13 @@ export class AuthService {
   readonly isAdmin = computed(() => this.userSignal()?.role === 'ADMIN');
 
   login(request: LoginRequest) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, request).pipe(
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, request, jsonHttpOptions).pipe(
       tap((response) => this.handleAuth(response)),
     );
   }
 
   register(request: RegisterRequest) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, request).pipe(
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, request, jsonHttpOptions).pipe(
       tap((response) => this.handleAuth(response)),
     );
   }

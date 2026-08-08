@@ -26,6 +26,8 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -42,7 +44,9 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(
-            HttpSecurity http, @Qualifier("jwtDecoder") JwtDecoder accessDecoder) throws Exception {
+            HttpSecurity http,
+            @Qualifier("jwtDecoder") JwtDecoder accessDecoder,
+            BearerTokenResolver bearerTokenResolver) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
@@ -55,10 +59,23 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/courses/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resource -> resource
+                        .bearerTokenResolver(bearerTokenResolver)
                         .jwt(jwt -> jwt
                                 .decoder(accessDecoder)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .build();
+    }
+
+    @Bean
+    BearerTokenResolver bearerTokenResolver() {
+        DefaultBearerTokenResolver defaultResolver = new DefaultBearerTokenResolver();
+        return request -> {
+            String path = request.getRequestURI();
+            if (path.startsWith("/api/auth/")) {
+                return null;
+            }
+            return defaultResolver.resolve(request);
+        };
     }
 
     @Bean
