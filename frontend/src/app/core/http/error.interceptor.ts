@@ -4,7 +4,11 @@ import { catchError, Observable, throwError } from 'rxjs';
 import type { ApiError } from '../../shared/models/api';
 import { Notifier } from './notifier.service';
 
-function extractMessage(error: HttpErrorResponse): string {
+function isPublicAuthRequest(url: string): boolean {
+  return /\/api\/auth\/(login|register)$/.test(url);
+}
+
+function extractMessage(error: HttpErrorResponse, requestUrl: string): string {
   const body = error.error;
   if (body && typeof body === 'object' && 'message' in body && typeof body.message === 'string') {
     return body.message;
@@ -16,6 +20,9 @@ function extractMessage(error: HttpErrorResponse): string {
     case 400:
       return 'Requisição inválida. Verifique os dados informados.';
     case 401:
+      if (isPublicAuthRequest(requestUrl)) {
+        return 'Não foi possível autenticar. Verifique seus dados e tente novamente.';
+      }
       return 'Sua sessão expirou. Faça login novamente.';
     case 403:
       return 'Você não tem permissão para realizar esta ação.';
@@ -45,7 +52,7 @@ export function errorInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn)
     catchError((error: HttpErrorResponse): Observable<never> => {
       const apiError: ApiError = {
         status: error.status,
-        message: extractMessage(error),
+        message: extractMessage(error, req.url),
         fieldErrors: extractFieldErrors(error),
       };
       notifier.error(apiError.message);
