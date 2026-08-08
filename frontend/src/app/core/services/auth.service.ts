@@ -37,8 +37,15 @@ export class AuthService {
   }
 
   private handleAuth(response: AuthResponse): void {
-    this.tokenStorage.save(response.accessToken, response.refreshToken, response.user);
-    this.userSignal.set(response.user);
+    const user: AuthUser = {
+      id: response.user.id,
+      email: response.user.email,
+      firstName: response.user.firstName,
+      lastName: response.user.lastName,
+      role: response.user.role,
+    };
+    this.tokenStorage.save(response.accessToken, response.refreshToken, user);
+    this.userSignal.set(user);
   }
 }
 
