@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButton, MatIconButton } from '@angular/material/button';
@@ -124,6 +124,7 @@ export class AdminCourses {
   private readonly courseService = inject(CourseService);
   private readonly dialog = inject(MatDialog);
   private readonly notifier = inject(Notifier);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly courses = signal<Course[]>([]);
   protected readonly loading = signal(true);
@@ -137,7 +138,7 @@ export class AdminCourses {
     this.loading.set(true);
     this.courseService
       .list()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (courses) => {
           this.courses.set(courses);
@@ -151,7 +152,7 @@ export class AdminCourses {
     const ref = this.dialog.open(CourseFormDialog);
     ref
       .afterClosed()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((input) => {
         if (!input) {
           return;
@@ -169,7 +170,7 @@ export class AdminCourses {
     const ref = this.dialog.open(CourseFormDialog, { data: { course } });
     ref
       .afterClosed()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((input) => {
         if (!input) {
           return;
@@ -194,7 +195,7 @@ export class AdminCourses {
     });
     ref
       .afterClosed()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((confirmed) => {
         if (!confirmed) {
           return;
