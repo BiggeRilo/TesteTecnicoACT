@@ -7,7 +7,7 @@ export const studentGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
   if (!auth.isAuthenticated()) {
-    return router.createUrlTree(['/login']);
+    return true;
   }
   return auth.isAdmin() ? router.createUrlTree(['/courses']) : true;
 };

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import type { AuthResponse, AuthUser, LoginRequest, RegisterRequest, User } from '../../shared/models/user';
@@ -13,13 +13,11 @@ export class AuthService {
   private readonly tokenStorage = inject(TokenStorage);
   private readonly router = inject(Router);
 
-  private readonly userSignal = signal<AuthUser | null>(this.tokenStorage.getUser());
-
-  readonly user = this.userSignal.asReadonly();
+  readonly user = this.tokenStorage.user;
   readonly isAuthenticated = computed(
-    () => this.userSignal() !== null && !!this.tokenStorage.getAccessToken(),
+    () => this.user() !== null && this.tokenStorage.accessToken() !== null,
   );
-  readonly isAdmin = computed(() => this.userSignal()?.role === 'ADMIN');
+  readonly isAdmin = computed(() => this.user()?.role === 'ADMIN');
 
   login(request: LoginRequest) {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, request, jsonHttpOptions).pipe(
@@ -35,7 +33,6 @@ export class AuthService {
 
   logout(): void {
     this.tokenStorage.clear();
-    this.userSignal.set(null);
     this.router.navigate(['/login']);
   }
 
@@ -48,7 +45,6 @@ export class AuthService {
       role: response.user.role,
     };
     this.tokenStorage.save(response.accessToken, response.refreshToken, user);
-    this.userSignal.set(user);
   }
 }
 

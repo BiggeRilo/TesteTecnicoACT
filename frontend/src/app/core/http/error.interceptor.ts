@@ -1,7 +1,9 @@
 import { HttpErrorResponse, type HttpEvent, type HttpHandlerFn, type HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { catchError, Observable, throwError } from 'rxjs';
 import type { ApiError } from '../../shared/models/api';
+import { TokenStorage } from '../services/token-storage.service';
 import { Notifier } from './notifier.service';
 
 function isPublicAuthRequest(url: string): boolean {
@@ -48,8 +50,17 @@ function extractFieldErrors(error: HttpErrorResponse): Record<string, string> | 
 
 export function errorInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
   const notifier = inject(Notifier);
+  const router = inject(Router);
+  const tokenStorage = inject(TokenStorage);
   return next(req).pipe(
     catchError((error: HttpErrorResponse): Observable<never> => {
+      if (error.status === 401 && !isPublicAuthRequest(req.url)) {
+        const returnUrl = router.url;
+        tokenStorage.clear();
+        void router.navigate(['/login'], {
+          queryParams: returnUrl && returnUrl !== '/login' ? { returnUrl } : undefined,
+        });
+      }
       const apiError: ApiError = {
         status: error.status,
         message: extractMessage(error, req.url),
