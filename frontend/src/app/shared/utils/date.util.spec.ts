@@ -47,6 +47,13 @@ describe('date.util', () => {
       expect(daysUntil(iso)).toBeGreaterThanOrEqual(5);
     });
 
+    it('should accept the backend LocalDateTime deadline format', () => {
+      const future = new Date();
+      future.setDate(future.getDate() + 5);
+      const deadline = `${future.toISOString().slice(0, 10)}T12:30:00`;
+      expect(daysUntil(deadline)).toBeGreaterThanOrEqual(5);
+    });
+
     it('should return a negative number for a past date', () => {
       const past = new Date();
       past.setDate(past.getDate() - 3);

@@ -5,8 +5,13 @@ export function toISODate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function parseISODate(iso: string, endOfDay = false): Date {
+  const datePart = iso.slice(0, 10);
+  return new Date(`${datePart}T${endOfDay ? '23:59:59.999' : '00:00:00'}`);
+}
+
 export function formatDate(iso: string): string {
-  const date = new Date(`${iso}T00:00:00`);
+  const date = parseISODate(iso);
   return date.toLocaleDateString('pt-BR');
 }
 
@@ -37,7 +42,10 @@ export function decodeTimeSpent(timeSpent: string): number {
 }
 
 export function daysUntil(iso: string): number {
-  const deadline = new Date(`${iso}T23:59:59`);
+  const deadline = parseISODate(iso, true);
+  if (Number.isNaN(deadline.getTime())) {
+    return 0;
+  }
   const now = new Date();
   return Math.ceil((deadline.getTime() - now.getTime()) / 86_400_000);
 }

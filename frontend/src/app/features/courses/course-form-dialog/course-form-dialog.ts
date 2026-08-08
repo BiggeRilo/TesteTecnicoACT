@@ -63,7 +63,7 @@ export interface CourseFormDialogData {
 export class CourseFormDialog {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<CourseFormDialog>);
-  private readonly data = inject<CourseFormDialogData>(MAT_DIALOG_DATA);
+  private readonly data = inject<CourseFormDialogData>(MAT_DIALOG_DATA, { optional: true }) ?? {};
 
   protected readonly submitting = signal(false);
   protected readonly isEditing = signal(Boolean(this.data.course));

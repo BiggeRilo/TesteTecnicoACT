@@ -61,7 +61,7 @@ import { daysUntil } from '../../../shared/utils/date.util';
             </mat-card-content>
             <mat-card-actions align="end">
               <a mat-button routerLink="/courses/{{ course.id }}">Ver detalhes</a>
-              @if (auth.isAuthenticated() && !enrollmentFor(course.id)) {
+              @if (auth.isAuthenticated() && !auth.isAdmin() && !enrollmentFor(course.id)) {
                 <button
                   mat-flat-button
                   color="primary"
@@ -182,7 +182,7 @@ export class CourseList {
         error: () => this.loading.set(false),
       });
 
-    if (this.auth.isAuthenticated()) {
+    if (this.auth.isAuthenticated() && !this.auth.isAdmin()) {
       this.enrollmentService
         .myEnrollments()
         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -207,6 +207,9 @@ export class CourseList {
   protected enroll(courseId: number): void {
     if (!this.auth.isAuthenticated()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: '/courses' } });
+      return;
+    }
+    if (this.auth.isAdmin()) {
       return;
     }
     this.enrollingId.set(courseId);

@@ -48,7 +48,7 @@ import { daysUntil } from '../../../shared/utils/date.util';
                   Registrar tarefas
                 </a>
               </div>
-            } @else if (auth.isAuthenticated()) {
+            } @else if (auth.isAuthenticated() && !auth.isAdmin()) {
               <div class="detail__status">
                 <mat-icon>info</mat-icon>
                 <div>
@@ -63,6 +63,17 @@ import { daysUntil } from '../../../shared/utils/date.util';
                 >
                   {{ enrolling() ? 'Matriculando…' : 'Matricular-se' }}
                 </button>
+              </div>
+            } @else if (auth.isAdmin()) {
+              <div class="detail__status">
+                <mat-icon>admin_panel_settings</mat-icon>
+                <div>
+                  <strong>Visualização de administrador</strong>
+                  <p>Administradores gerenciam cursos e não realizam matrículas.</p>
+                </div>
+                <a mat-flat-button color="primary" routerLink="/admin/courses">
+                  Administrar cursos
+                </a>
               </div>
             } @else {
               <div class="detail__status">
@@ -172,7 +183,7 @@ export class CourseDetail {
         error: () => this.loading.set(false),
       });
 
-    if (this.auth.isAuthenticated()) {
+    if (this.auth.isAuthenticated() && !this.auth.isAdmin()) {
       this.enrollmentService
         .myEnrollments()
         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -186,6 +197,9 @@ export class CourseDetail {
   }
 
   protected enroll(courseId: number): void {
+    if (this.auth.isAdmin()) {
+      return;
+    }
     this.enrolling.set(true);
     this.enrollmentService
       .enroll(courseId)

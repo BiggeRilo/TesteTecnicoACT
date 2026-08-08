@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './core/guards/admin.guard';
-import { authGuard } from './core/guards/auth.guard';
+import { studentGuard } from './core/guards/student.guard';
 import { MainLayout } from './core/layout/main-layout';
 
 export const routes: Routes = [
@@ -28,13 +28,13 @@ export const routes: Routes = [
       {
         path: 'my-courses',
         loadComponent: () => import('./features/enrollments/my-courses/my-courses').then((m) => m.MyCourses),
-        canActivate: [authGuard],
+        canActivate: [studentGuard],
         title: 'Meus cursos',
       },
       {
         path: 'my-courses/:id/logs',
         loadComponent: () => import('./features/enrollments/course-logs/course-logs').then((m) => m.CourseLogs),
-        canActivate: [authGuard],
+        canActivate: [studentGuard],
         title: 'Tarefas do curso',
       },
       {

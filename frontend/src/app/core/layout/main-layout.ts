@@ -34,7 +34,7 @@ import { AuthService } from '../services/auth.service';
         >
           Cursos
         </a>
-        @if (auth.isAuthenticated()) {
+        @if (auth.isAuthenticated() && !auth.isAdmin()) {
           <a
             mat-button
             routerLink="/my-courses"
@@ -43,16 +43,16 @@ import { AuthService } from '../services/auth.service';
           >
             Meus cursos
           </a>
-          @if (auth.isAdmin()) {
-            <a
-              mat-button
-              routerLink="/admin/courses"
-              routerLinkActive="toolbar__link--active"
-              [routerLinkActiveOptions]="{ exact: true }"
-            >
-              Administrar
-            </a>
-          }
+        }
+        @if (auth.isAdmin()) {
+          <a
+            mat-button
+            routerLink="/admin/courses"
+            routerLinkActive="toolbar__link--active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            Administrar
+          </a>
         }
       </nav>
 
